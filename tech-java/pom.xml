@@ -12,8 +12,6 @@
         <module>protobuf</module>
         <module>netty</module>
         <module>joptimize</module>
-      <module>algorithm</module>
-        <module>algorithm</module>
         <module>algorithm</module>
     </modules>
 
