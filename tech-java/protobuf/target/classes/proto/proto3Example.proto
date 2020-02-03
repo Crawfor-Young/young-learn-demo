@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+
+import "proto3Extend.proto";
+// 使用Any类型必须导入
+import "google/protobuf/any.proto";
+
+
+option java_package = "com.young.proto.model"; //生成java文件的包名
+
+//该选项表明想要生成Java类的名称。如果在.proto文件中没有明确的java_outer_classname定义
+//生成的class名称将会根据.proto文件的名称采用驼峰式的命名方式进行生成。如（foo_bar.proto生成的java类名为FooBar.java）
+//如果不生成java代码，则该选项不起任何作用
+option java_outer_classname = "Proto3Super";
+
+//文件选项，只影响C++或Java，有三个值为分别为SPEED（默认）,CODE_SIZE（通过共享或基于反射产生最少的类，产生的代码量最小，但速度慢）,或者LITE_RUNTIME（依赖的类库最小）
+option optimize_for = CODE_SIZE;
+
+//proto3中移除了required，并将optional改为singular
+message RequestPage {
+
+  repeated InnerObject inner = 2; //在一个格式良好的消息中，这种字段可以重复任意多次（包括0次）。重复的值的顺序会被保留(对应Java中的List)。
+
+  TYPE type = 3; //singular(singular，不能显式指定，默认)一个格式良好的消息应该有0个或者1个这种字段（但是不能超过1个）proto2中为optional
+  bool deprecated_field = 4 [deprecated = true]; //在JAVA中的废弃字段，会被加上@Deprecated注释
+  com.young.proto.model.extend.OtherObject other = 5; //从import的proto中导入的类
+
+  //key_type可以是任意Integer或者string类型（除了floating和bytes的任意标量类型）
+  //value_type可以是任意类型
+  //序列化后的顺序和map迭代器的顺序是不确定
+  //从序列化中解析或者融合时，如果有重复的key则后一个key不会被使用
+  map<string, TYPE> type_map = 6;
+
+  //一个Any类型包括一个可以被序列化bytes类型的任意消息，以及一个URL作为一个全局标识符和解析消息类型
+  repeated google.protobuf.Any details = 7;
+
+  //如果消息中有很多可选字段， 并且同时至多一个字段会被设置， 可以使用oneof特性节省内存
+  //Oneof字段就像可选字段， 除了它们会共享内存， 至多一个字段会被设置, 设置其中一个字段会清除其它字段,设置多次后，只有最后一次设置的字段有值
+  //oneof不支持repeated
+  //可以使用case()或者WhichOneof() 方法检查哪个oneof字段被设置(根据所用语言方法名不同)
+  oneof Radio {
+    int32 radio_one = 8;
+    int32 radio_two = 9;
+  }
+
+  reserved 1, 11; //保留字段值，不可用
+  reserved "alreadyUsed", "cannotUse"; //保留字段名，不可用
+
+  //指定message的包名，会被option java_package覆盖
+  //package com.young.proto.moedel.inner;
+  message InnerObject {
+    int32 id = 1; //int32, uint32, int64, uint64,和bool是全部兼容的,超出部分会被截断
+    string unique = 2; //string和bytes是兼容的——只要bytes是有效的UTF-8编码
+  }
+}
+
+enum TYPE {
+  option allow_alias = true; //将allow_alias设定位true就可以将不同的枚举常量指定成相同的值
+  TYPE_ONE = 0; //枚举必须将第一个类型映射为0，并且这个值将作为默认值
+  TYPE_TWO = 1;
+  TYPE_THREE = 2;
+  TYPE_LIKE_THREE = 2;
+}
+
+
+
